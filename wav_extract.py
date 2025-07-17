@@ -7,7 +7,7 @@ from scipy.fft import fft, fftfreq
 MIN_AMP_FOR_BUZZ = -21
 MAX_FREQ_FOR_BUZZ = 462.5
 
-audio: AudioSegment = AudioSegment.from_wav("uvb76.wav")
+AUDIO: AudioSegment = AudioSegment.from_wav("uvb76.wav")
 
 def get_freq_and_amplitude(segment: AudioSegment):
     # Get raw audio data as array
@@ -39,7 +39,7 @@ def get_freq_and_amplitude(segment: AudioSegment):
 def is_buzz(freq, amp):
     return freq <= MAX_FREQ_FOR_BUZZ and amp >= MIN_AMP_FOR_BUZZ
 
-def main():
+def get_buzzes(audio, sleep=False):
     buzzes = []
     buzz_start = None
     buzzing = False
@@ -67,12 +67,19 @@ def main():
                 })
                 buzzing = False
 
-        time.sleep(0.1)
+        if sleep:
+            time.sleep(0.1)
 
-    print(len(buzzes))
+    return buzzes
 
-    x = np.array([i//10 for i in range((len(audio)//100) + 1)])
-    y = np.array([get_freq_and_amplitude(audio[max(0, i-100):i+1])[0] for i in range(0, len(audio), 100)])
+def main():
+    start = time.perf_counter()
+    print(len(get_buzzes(AUDIO)))
+    end = time.perf_counter()
+    print("Duration:", end - start)
+
+    x = np.array([i//10 for i in range((len(AUDIO)//100) + 1)])
+    y = np.array([get_freq_and_amplitude(AUDIO[max(0, i-100):i+1])[0] for i in range(0, len(AUDIO), 100)])
     plt.plot(x, y)
     plt.xlabel("Time")
     plt.ylabel("Hz")
