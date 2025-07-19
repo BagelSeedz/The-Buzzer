@@ -7,8 +7,6 @@ from scipy.fft import fft, fftfreq
 MIN_AMP_FOR_BUZZ = -21
 MAX_FREQ_FOR_BUZZ = 462.5
 
-AUDIO: AudioSegment = AudioSegment.from_wav("uvb76.wav")
-
 def get_freq_and_amplitude(segment: AudioSegment):
     # Get raw audio data as array
     samples = np.array(segment.get_array_of_samples())
@@ -48,14 +46,14 @@ def get_buzzes(audio, sleep=False):
         segment = audio[max(0, i-100):i+1]
 
         freq, amp = get_freq_and_amplitude(segment)
-        print(f"Time: {i/1000:.2f}s | Freq: {freq:.2f} Hz | Amplitude: {amp:.2f} dBFS")
+        # print(f"Time: {i/1000:.2f}s | Freq: {freq:.2f} Hz | Amplitude: {amp:.2f} dBFS")
         
         if is_buzz(freq, amp):
             frames_with_buzz += 1
             if not buzzing and frames_with_buzz >= 3:
                 buzzing = True
-                buzz_start = i/1000
-                print("bzzzz.")
+                buzz_start = (i-300)/1000
+                # print("bzzzz.")
         else:
             frames_with_buzz = 0
             if buzzing:
@@ -70,9 +68,19 @@ def get_buzzes(audio, sleep=False):
         if sleep:
             time.sleep(0.1)
 
+    if buzzing:
+        buzz_end = 30.0
+        duration = buzz_end - buzz_start
+        buzzes.append({
+            "start": round(buzz_start, 2),
+            "duration": round(duration, 2)
+        })
+
     return buzzes
 
 def main():
+    AUDIO: AudioSegment = AudioSegment.from_wav("uvb76.wav")
+
     start = time.perf_counter()
     print(len(get_buzzes(AUDIO)))
     end = time.perf_counter()
@@ -86,4 +94,5 @@ def main():
     plt.title("Average Frequency over Time")
     plt.show()
 
-main()
+if __name__ == '__main__':
+    main()
